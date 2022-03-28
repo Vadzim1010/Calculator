@@ -2,123 +2,93 @@ package com.example.calculator
 
 class Calculator {
 
-    private val listOfMarks = listOf("*", "/", "+", "-")
+    private val listOfMathsSymbols = listOf("*", "/", "+", "-")
 
-    fun getResult(equation: String): String {
-        var equationList = equation.parseToList()
+    fun calculate(equation: String): String {
+        var equationList = equation.parseToList() //parse to list of strings because we can have numbers with 2 and more symbols
         var result = ""
 
         try {
             while (equationList.contains("(")) {
-                equationList = openBrackets(equationList)
+                equationList = openParentheses(equationList)//count and replace inside parentheses while we have parentheses
             }
-            equationList = calculate(equationList)
+            equationList = countUp(equationList)//count when we don't have any parentheses
 
-            result = "= ${equationList[0]}"
+            result = "= ${equationList[0]}"//we have only one number in list after calculation
             if (result.endsWith(".0")) {
-                result = result.dropLast(2)
+                result = result.dropLast(2) //delete .0 if we have integer
             }
         } catch (e: Exception) {
-            return "Incorrect format. Please try again."
+            return "Incorrect format. Please try again." //if we had incorrect format of input data
         }
 
         return if (result == "= Infinity" || result == "= NaN") {
-            "Can't divide by zero. Please try again."
+            "Can't divide by zero. Please try again." //if we try to divide by zero or divide zero by zero
         } else {
             result
         }
     }
 
 
-    private fun calculate(equation: List<String>): List<String> {
-        val list = equation.toMutableList()
+    private fun countUp(equationList: List<String>): List<String> {
+        val resultList = equationList.toMutableList()
         var result = 0.0F
 
-        if (!equation.isCorrectFormat()) {
+        if (!equationList.isCorrectFormat()) {
             return emptyList()
         }
 
-        listOfMarks.forEach { mark ->
-            while (list.contains(mark)) {
-                for (i in 0 until list.size) {
-                    if (list[i] == mark) {
-                        val x = list[i - 1]
-                        val y = list[i + 1]
-                        result = when (mark) {
+        listOfMathsSymbols.forEach { mathsSymbol ->
+            while (resultList.contains(mathsSymbol)) {
+                for (i in 0 until resultList.size) {
+                    if (resultList[i] == mathsSymbol) {
+                        val x = resultList[i - 1]
+                        val y = resultList[i + 1]
+                        result = when (mathsSymbol) {
                             "*" -> x.toFloat() * y.toFloat()
                             "/" -> x.toFloat() / y.toFloat()
                             "+" -> x.toFloat() + y.toFloat()
                             "-" -> x.toFloat() - y.toFloat()
                             else -> 0.0F
                         }
-                        list[i + 1] = result.toString()
-                        list.removeAt(i - 1)
-                        list.removeAt(i - 1)
+                        resultList[i + 1] = result.toString()
+                        resultList.removeAt(i - 1)
+                        resultList.removeAt(i - 1)
                         break
                     }
                 }
             }
         }
-        return list
+        return resultList
     }
 
-    private fun openBrackets(equation: List<String>): List<String> {
-        val list = equation.toMutableList()
-        var insideBrackets = listOf<String>()
+
+    private fun openParentheses(equationList: List<String>): List<String> {
+        val resultList = equationList.toMutableList()
+        var insideParenthesesList = listOf<String>()
         var startIndex = 0
         var endIndex = 0
 
-        startIndex = equation.indexOfOpenBracket() + 1
-        endIndex = equation.indexOfFirst { it == ")" } - 1
+        startIndex = equationList.indexOfOpenParenthesis() + 1
+        endIndex = equationList.indexOfFirst { it == ")" } - 1
 
-        insideBrackets = equation.slice(startIndex..endIndex)
-        insideBrackets = calculate(insideBrackets)
+        insideParenthesesList = equationList.slice(startIndex..endIndex)
+        insideParenthesesList = countUp(insideParenthesesList)
 
         for (i in startIndex..endIndex + 2) {
-            list.removeAt(startIndex - 1)
+            resultList.removeAt(startIndex - 1)
         }
 
-        list.add(startIndex - 1, insideBrackets[0])
+        resultList.add(startIndex - 1, insideParenthesesList[0])
 
-        return list
+        return resultList
     }
 
 
-    private fun String.parseToList(): List<String> {
-        val list = mutableListOf<String>()
-        var currentString = ""
-        var index = 0
-
-        this.forEach { char ->
-            index++
-            if (char.isNumber) {
-                currentString += char
-                if (index == this.length) {
-                    list.add(currentString)
-                }
-                return@forEach
-            }
-
-            if (currentString.isBlank()) {
-                list.add(char.toString())
-            } else {
-                list.add(currentString)
-                list.add(char.toString())
-                currentString = ""
-            }
-        }
-        return list.removeSpaces
-    }
-
-
-    private val List<String>.removeSpaces
-        get() = this.filter { it != " " }
-
-
-    private fun List<String>.indexOfOpenBracket(): Int {
+    private fun List<String>.indexOfOpenParenthesis(): Int {
         var startIndex = 0
         for (i in 0 until this.size) {
-            if (this[i] == "(" && i + 1 < this.size) {
+            if (this[i] == "(") {
                 startIndex = i
             }
             if (this[i] == ")") {
@@ -128,9 +98,10 @@ class Calculator {
         return startIndex
     }
 
+
     private fun List<String>.isCorrectFormat(): Boolean {
         var result = false
-        if (this.all { it[0].isNumber || it[0].isMark }) {
+        if (this.all { it[0].isNumber || it[0].isMathsSymbol }) {
             for (i in 0 until this.size step 2) {
                 if (this[i].all { it.isNumber || it == '-' } && this.size % 2 != 0) {
                     result = true
@@ -140,5 +111,32 @@ class Calculator {
             }
         }
         return result
+    }
+
+
+    private fun String.parseToList(): List<String> {
+        val resultList = mutableListOf<String>()
+        var currentString = ""
+        var index = 0
+
+        this.forEach { char ->
+            index++
+            if (char.isNumber) {
+                currentString += char
+                if (index == this.length) {
+                    resultList.add(currentString)
+                }
+                return@forEach
+            }
+
+            if (currentString.isBlank()) {
+                resultList.add(char.toString())
+            } else {
+                resultList.add(currentString)
+                resultList.add(char.toString())
+                currentString = ""
+            }
+        }
+        return resultList.removeSpaces
     }
 }

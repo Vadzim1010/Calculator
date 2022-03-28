@@ -1,12 +1,11 @@
 package com.example.calculator.ui
 
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.fragment.app.Fragment
 import com.example.calculator.Calculator
-import com.example.calculator.R
 import com.example.calculator.databinding.FragmentCalculatorBinding
 
 class CalculatorFragment : Fragment() {
@@ -29,7 +28,7 @@ class CalculatorFragment : Fragment() {
         initButtons()
     }
 
-    private fun initButtons() = binding.run {
+    private fun initButtons() = with(binding) {
         var equation = ""
 
         button1.setOnClickListener {
@@ -105,7 +104,7 @@ class CalculatorFragment : Fragment() {
             equationTextView.text = equation
         }
         buttonEquals.setOnClickListener {
-            equationTextView.text = calculator.getResult(equation)
+            equationTextView.text = calculator.calculate(equation)
             equation = ""
         }
     }

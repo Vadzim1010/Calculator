@@ -16,7 +16,7 @@ val Char.isNumber
         else -> false
     }
 
-val Char.isMark
+val Char.isMathsSymbol
     get() = when (this) {
         '*' -> true
         '/' -> true
@@ -24,3 +24,7 @@ val Char.isMark
         '-' -> true
         else -> false
     }
+
+val List<String>.removeSpaces
+    get() = this.filter { it != " " }
+
